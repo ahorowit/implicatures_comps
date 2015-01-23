@@ -83,8 +83,10 @@ qplot(none_control, some_implicature, col=agegroup,
 	xlab="Proportion of 'none' trials correct",
 		position=position_jitter(.02), data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
+			theme_bw()+
 	geom_smooth(aes(col=agegroup, group=agegroup), 
 				se=FALSE, method="lm",lty=3)
+
 library(dplyr)
 cor.test(cs$none_control, cs$some_implicature)
 cs %>% group_by(agegroup) %>% 

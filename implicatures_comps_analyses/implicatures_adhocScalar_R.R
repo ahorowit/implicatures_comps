@@ -79,6 +79,7 @@ qplot(x = type, y = prop.corr,
 	fill = age, data=agg.data) + 
 	facet_grid(.~implicature_type,scale="free_x") + 
 	geom_errorbar(limits, position=dodge, width=.25) +
+	geom_abline(intercept=.5,slope=0,lty=2) + 
 	# theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) + 
 	ylab("Proportion Correct") + xlab("Trial Type") + 
 	theme_bw()
@@ -106,8 +107,10 @@ qplot(control_none_scalar, implicature_scalar, col=agegroup,
 	xlab="Proportion of 'none' trials correct",
 		position=position_jitter(.02), data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
+		theme_bw()+
 	geom_smooth(aes(col= agegroup, group= agegroup), 
-				se=FALSE, method="lm",lty=3)
+				se=FALSE, method="lm",lty=3) 
+				
 
 library(dplyr)
 cor.test(cs$control_none_scalar, cs$implicature_scalar)
