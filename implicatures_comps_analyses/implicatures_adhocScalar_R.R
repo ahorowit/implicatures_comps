@@ -31,6 +31,13 @@ data$trial_type[type != "implicature"] <- "control"
 detach(data)
 
 
+attach(data)
+data$value[1:432] <- "firstHalf"
+data$value[433:864] <- "secondHalf"
+detach(data)
+names(data)[12] <- "half"
+
+
 
 ######## data by condition and trial type ##########
 agg.data <- aggregate(data$correct, list(data$condition, data$type, data$trial_type, data$older), FUN=sum)
@@ -74,9 +81,13 @@ agg.data$type <- factor(agg.data$type,
 					labels = c("implicature","comparison", 
 					"distractor",
 					"none","unambig. some", "all"))
-qplot(x = type, y = prop.corr,
-	geom="bar", stat="identity", position="dodge",
-	fill = age, data=agg.data) + 
+qplot(x = type, 
+	y = prop.corr,
+	geom="bar", 
+	stat="identity", 
+	position="dodge",
+	fill = age, 
+	data=agg.data) + 
 	facet_grid(.~implicature_type,scale="free_x") + 
 	geom_errorbar(limits, position=dodge, width=.25) +
 	geom_abline(intercept=.5,slope=0,lty=2) + 
@@ -127,5 +138,13 @@ dip.test(cs$control_all_scalar)
 
 ##############################
 
-gl <- glmer(correct ~ trial_type * condition * age    + (trial_type | Subj_ID), data=data, family=binomial)
+gl <- glmer(correct ~ trial_type * condition * age   + (trial_type | Subj_ID), data=data, family=binomial)
 summary(gl)
+
+###
+
+
+
+gl <- glmer(correct ~ condition * half * age   + (trial_type | Subj_ID), data=data, family=binomial)
+summary(gl)
+

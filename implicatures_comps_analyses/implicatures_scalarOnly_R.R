@@ -32,6 +32,12 @@ data$trial_type[type != "some"] <- "control"
 detach(data)
 
 
+attach(data)
+data$value[1:459] <- "firstHalf"
+data$value[460:918] <- "secondHalf"
+detach(data)
+names(data)[10] <- "half"
+
 
 ######## data by selectionType and trial type ##########
 agg.data <- aggregate(data$correct, list( data$type, data$trial_type, data$agegroup), FUN=sum)
@@ -63,7 +69,7 @@ qplot(data = agg.data,
 	ylab="Proportion Correct",
 	xlab="Scalar trial type",
 	position=dodge,
-	ylim=c(0,1))  + geom_abline(intercept=.5,slope=0,lty=2) + geom_errorbar(limits,position=dodge,width=0.25) + theme_bw() + plot.style
+	ylim=c(0,1))  + geom_abline(intercept=.5,slope=0,lty=2) + geom_errorbar(limits,position=dodge,width=0.25) + theme_bw() + plot.style 
 
 
 ########## individual differences
@@ -87,11 +93,44 @@ qplot(none_control, some_implicature, col=agegroup,
 	geom_smooth(aes(col=agegroup, group=agegroup), 
 				se=FALSE, method="lm",lty=3)
 
+
+qplot(none_control, all_control, col=agegroup, 
+	ylab="Proportion of 'all' trials correct",
+	xlab="Proportion of 'none' trials correct",
+		position=position_jitter(.02), data=cs) + 
+	geom_smooth(method="lm", col="black", lty=1) + 
+			theme_bw()+
+	geom_smooth(aes(col=agegroup, group=agegroup), 
+				se=FALSE, method="lm",lty=3)
+
+qplot( some_implicature, all_control, col=agegroup, 
+	ylab="Proportion of 'all' trials correct",
+	xlab="Proportion of 'some' trials correct",
+		position=position_jitter(.02), data=cs) + 
+	geom_smooth(method="lm", col="black", lty=1) + 
+			theme_bw()+
+	geom_smooth(aes(col=agegroup, group=agegroup), 
+				se=FALSE, method="lm",lty=3)
+
+
 library(dplyr)
 cor.test(cs$none_control, cs$some_implicature)
 cs %>% group_by(agegroup) %>% 
 	summarise(r = cor.test(none_control, some_implicature)$estimate,
 			  p = cor.test(none_control, some_implicature)$p.value)
+			  
+			  
+cor.test(cs$all_control, cs$some_implicature)
+cs %>% group_by(agegroup) %>% 
+	summarise(r = cor.test(all_control, some_implicature)$estimate,
+			  p = cor.test(all_control, some_implicature)$p.value)		
+			  
+
+cor.test(cs$all_control, cs$none_control)
+cs %>% group_by(agegroup) %>% 
+	summarise(r = cor.test(all_control, none_control)$estimate,
+			  p = cor.test(all_control, none_control)$p.value)					  	  
+			  
 
 dip.test(cs$some_implicature)
 dip.test(cs$none_control)
@@ -103,6 +142,12 @@ summary(gl)
 
 
 gl <- glmer(correct ~  trial_type * age    + (trial_type | Subj_ID), data=data, family=binomial)
+summary(gl)
+
+
+
+
+gl <- glmer(correct ~  type * half   + (type | Subj_ID), data=data, family=binomial)
 summary(gl)
 
 
