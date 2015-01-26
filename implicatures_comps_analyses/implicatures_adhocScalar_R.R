@@ -129,6 +129,20 @@ cs %>% group_by(agegroup) %>%
 	summarise(r = cor.test(control_none_scalar, implicature_scalar)$estimate,
 			  p = cor.test(control_none_scalar, implicature_scalar)$p.value)
 
+cor.test(cs$control_all_scalar, cs$implicature_scalar)
+cs %>% group_by(agegroup) %>% 
+	summarise(r = cor.test(control_all_scalar, implicature_scalar)$estimate,
+			  p = cor.test(control_all_scalar, implicature_scalar)$p.value)					  	  
+cor.test(cs$control_all_scalar, cs$control_none_scalar)
+cs %>% group_by(agegroup) %>% 
+	summarise(r = cor.test(control_all_scalar, control_none_scalar)$estimate,
+			  p = cor.test(control_all_scalar, control_none_scalar)$p.value)		
+			  
+
+
+
+
+
 dip.test(cs$implicature_scalar)
 dip.test(cs$control_none_scalar)
 dip.test(cs$control_all_scalar)
@@ -145,6 +159,11 @@ summary(gl)
 
 
 
-gl <- glmer(correct ~ condition * half * age   + (trial_type | Subj_ID), data=data, family=binomial)
+gl <- glmer(correct ~ half * trial_type * condition  * age   + (trial_type | Subj_ID), data=data, family=binomial)
 summary(gl)
+
+
+gl <- glmer(correct ~ half   * age   + (trial_type | Subj_ID), data=data, family=binomial)
+summary(gl)
+
 
