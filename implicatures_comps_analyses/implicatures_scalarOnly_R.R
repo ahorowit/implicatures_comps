@@ -87,7 +87,8 @@ qplot(none_control, some_implicature, col=agegroup, position=position_jitter(.05
 qplot(none_control, some_implicature, col=agegroup, 
 	ylab="Proportion of 'some' trials correct",
 	xlab="Proportion of 'none' trials correct",
-		position=position_jitter(.02), data=cs) + 
+		#position=position_jitter(.02), 
+		alpha=0.01, data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
 			theme_bw()+
 	geom_smooth(aes(col=agegroup, group=agegroup), 
@@ -136,9 +137,20 @@ dip.test(cs$some_implicature)
 dip.test(cs$none_control)
 dip.test(cs$all_control)
 
+## vanilla model
+data$type <- factor(data$type, levels=c("some","none","all"))
+gl.int <- glmer(correct ~  type * age 
+			+ (type | Subj_ID), 
+			data=data, family=binomial)
+summary(gl.int)
 
-gl <- glmer(correct ~  type * age    + (type | Subj_ID), data=data, family=binomial)
-summary(gl)
+gl.norand <- glmer(correct ~  type * age 
+			+ (1 | Subj_ID), 
+			data=data, family=binomial)
+summary(gl.norand)
+
+
+
 
 
 gl <- glmer(correct ~  trial_type * age    + (trial_type | Subj_ID), data=data, family=binomial)
@@ -151,5 +163,39 @@ gl <- glmer(correct ~  type * half   + (type | Subj_ID), data=data, family=binom
 summary(gl)
 
 
+
+######### testing against chance
+
+scalarOnly_subs <- aggregate(correct ~ type + agegroup +  Subj_ID, data=data, mean)
+
+############### t-test 3.0--5.5
+t.test(subset(scalarOnly_subs, agegroup=="3.0--3.5" & type=="all")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="3.0--3.5" & type=="some")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="3.0--3.5" & type=="none")$correct, mu=0.5)
+
+
+############### t-test 3.5--4.0
+t.test(subset(scalarOnly_subs, agegroup=="3.5--4.0" & type=="all")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="3.5--4.0" & type=="some")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="3.5--4.0" & type=="none")$correct, mu=0.5)
+
+
+############### t-test 4.0--4.5
+t.test(subset(scalarOnly_subs, agegroup=="4.0--4.5" & type=="all")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="4.0--4.5" & type=="some")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="4.0--4.5" & type=="none")$correct, mu=0.5)
+
+############### t-test 4.5--5.0
+t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
+
+t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
 
 
