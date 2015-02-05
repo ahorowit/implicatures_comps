@@ -45,7 +45,7 @@ agg.data.len <- aggregate(data$correct, list(data$type, data$trial_type, data$ag
 agg.data$x <- agg.data$x 
 agg.data.len$x <- agg.data.len$x 
 
-names(agg.data) <- c( "trial_type", "implicature", "agegroup", "correct")
+names(agg.data) <- c( "trial_type", "implicature", "Age", "correct")
 agg.data$total <- agg.data.len$x
 agg.data$prop.corr <- agg.data$correct / agg.data$total
 
@@ -58,18 +58,23 @@ plot.style <- theme(panel.grid.major = element_blank(), panel.grid.minor = eleme
 dodge <- position_dodge(width=0.9) 
 limits <- aes(ymax = prop.corr + err, ymin=prop.corr - err) 
 
+agg.data$trial_type <- factor(agg.data$trial_type, 
+					levels = c("all","some", "none"), 
+					labels = c("All","Some", "None"))
 
-qplot(data = agg.data,
-	x = trial_type,
+qplot(x = trial_type, 
 	y = prop.corr,
-	geom="bar",
-	stat="identity",
-	fill=agegroup,	
-	#main="Preschooler results", 
-	ylab="Proportion Correct",
-	xlab="Scalar trial type",
-	position=dodge,
-	ylim=c(0,1))  + geom_abline(intercept=.5,slope=0,lty=2) + geom_errorbar(limits,position=dodge,width=0.25) + theme_bw() + plot.style 
+	geom="bar", 
+	stat="identity", 
+	position="dodge",
+	fill = Age, 
+	data=agg.data) + 
+	#facet_grid(.~implicature_type,scale="free_x") + 
+	geom_errorbar(limits, position=dodge, width=.25) +
+	geom_abline(intercept=.5,slope=0,lty=2) + 
+	# theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust=.5)) + 
+	ylab("Proportion Correct") + xlab("Trial Type") + 
+	theme_bw()
 
 
 ########## individual differences
@@ -77,31 +82,30 @@ qplot(data = agg.data,
 ms <- ddply(data, .(type, trial_type, Subj_ID), summarise, 
 	mean = mean(correct),
 	agegroup=agegroup[1])
-	#older = older[1])	
-	#note: am I allowed to substitute agegroup for older
 
-cs <- cast(ms, Subj_ID + agegroup ~ type + trial_type, value="mean")
+names(ms) <- c("type", "trial_type", "Subj_ID", "mean", "Age")
 
-qplot(none_control, some_implicature, col=agegroup, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
+cs <- cast(ms, Subj_ID + Age ~ type + trial_type, value="mean")
 
-qplot(none_control, some_implicature, col=agegroup, 
+qplot(none_control, some_implicature, col=Age, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
+
+qplot(none_control, some_implicature, col=Age, 
 	ylab="Proportion of 'some' trials correct",
 	xlab="Proportion of 'none' trials correct",
-		#position=position_jitter(.02), 
-		alpha=0.01, data=cs) + 
+		position=position_jitter(.02), data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
 			theme_bw()+
-	geom_smooth(aes(col=agegroup, group=agegroup), 
+	geom_smooth(aes(col=Age, group=Age), 
 				se=FALSE, method="lm",lty=3)
 
 
-qplot(none_control, all_control, col=agegroup, 
+qplot(none_control, all_control, col=Age, 
 	ylab="Proportion of 'all' trials correct",
 	xlab="Proportion of 'none' trials correct",
 		position=position_jitter(.02), data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
 			theme_bw()+
-	geom_smooth(aes(col=agegroup, group=agegroup), 
+	geom_smooth(aes(col=Age, group=Age), 
 				se=FALSE, method="lm",lty=3)
 
 qplot( some_implicature, all_control, col=agegroup, 
@@ -138,7 +142,7 @@ dip.test(cs$none_control)
 dip.test(cs$all_control)
 
 ## vanilla model
-data$type <- factor(data$type, levels=c("some","none","all"))
+data$type <- factor(data$type, levels=c("all","some","none"))
 gl.int <- glmer(correct ~  type * age 
 			+ (type | Subj_ID), 
 			data=data, family=binomial)
@@ -194,7 +198,7 @@ t.test(subset(scalarOnly_subs, agegroup=="4.0--4.5" & type=="none")$correct, mu=
 ############### t-test 4.5--5.0
 t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
 
-t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
+t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="some")$correct, mu=0.5)
 
 t.test(subset(scalarOnly_subs, agegroup=="4.5--5.0" & type=="none")$correct, mu=0.5)
 

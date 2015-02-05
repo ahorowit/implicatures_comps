@@ -40,18 +40,18 @@ names(data)[12] <- "half"
 
 
 ######## data by condition and trial type ##########
-agg.data <- aggregate(data$correct, list(data$condition, data$type, data$trial_type, data$older), FUN=sum)
-agg.data.len <- aggregate(data$correct, list(data$condition, data$type, data$trial_type, data$older), FUN=length)
+agg.data <- aggregate(data$correct, list(data$condition, data$type, data$trial_type, data$agegroup), FUN=sum)
+agg.data.len <- aggregate(data$correct, list(data$condition, data$type, data$trial_type, data$agegroup), FUN=length)
 agg.data$x <- agg.data$x 
 agg.data.len$x <- agg.data.len$x 
 
-names(agg.data) <- c("implicature_type", "type", "trial_type", "older", "correct")
+names(agg.data) <- c("implicature_type", "type", "trial_type", "Age", "correct")
 agg.data$total <- agg.data.len$x
 agg.data$prop.corr <- agg.data$correct / agg.data$total
 
 agg.data$q <- 1 - agg.data$prop.corr
 agg.data$err <- sqrt((agg.data$prop.corr * agg.data$q) / agg.data$total)
-agg.data$age <- ifelse(agg.data$older, "4.5-5.0", "4.0-4.5")
+#agg.data$age <- ifelse(agg.data$older, "4.5-5.0", "4.0-4.5")
 
 ########  plot by age
 plot.style <- theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(colour="black",size=.5), axis.ticks = element_line(size=.5),legend.justification=c(1,0), legend.position=c(.2,.2),legend.title=element_blank(), axis.title.x = element_text(vjust=-.5), axis.title.y = element_text(angle=90,vjust=0.25))
@@ -61,7 +61,7 @@ limits <- aes(ymax = prop.corr + err, ymin=prop.corr - err)
 
 
 qplot(data = agg.data,
-	x = age,
+	x = Age,
 	y = prop.corr,
 	geom="bar",
 	stat="identity",
@@ -78,15 +78,21 @@ agg.data$type <- factor(agg.data$type,
 					levels = c("implicature","control_comparison", 
 					"control_distractor",
 					"control_none","control_unambiguous", "control_all"), 
-					labels = c("implicature","comparison", 
-					"distractor",
-					"none","unambig. some", "all"))
+					labels = c("Implicature","Comparison", 
+					"Distractor",
+					"None","Unambig. Some", "All"))
+
+agg.data$implicature_type <- factor(agg.data$implicature_type, 
+					levels = c("adhoc","scalar"), 
+					labels = c("Ad-hoc","Scalar"))
+					
+									
 qplot(x = type, 
 	y = prop.corr,
 	geom="bar", 
 	stat="identity", 
 	position="dodge",
-	fill = age, 
+	fill = Age, 
 	data=agg.data) + 
 	facet_grid(.~implicature_type,scale="free_x") + 
 	geom_errorbar(limits, position=dodge, width=.25) +
@@ -100,26 +106,29 @@ qplot(x = type,
 
 
 
-### individual differences
+### individual differences scatterplot
 ms <- ddply(data, .(type, condition, Subj_ID), summarise, 
 	mean = mean(correct),
 	agegroup = agegroup[1])
 
-cs <- cast(ms, Subj_ID + agegroup ~ type + condition, value="mean")
+names(ms) <- c("type", "condition", "Subj_ID", "mean", "Age")
 
-qplot(control_none_scalar, implicature_scalar, col= agegroup, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
+
+cs <- cast(ms, Subj_ID + Age ~ type + condition, value="mean")
+
+qplot(control_none_scalar, implicature_scalar, col= Age, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
 
 ### to match Experiment 2 pretty plot
 library(dplyr)
-qplot(control_none_scalar, implicature_scalar, col=older, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
+qplot(control_none_scalar, implicature_scalar, col=Age, position=position_jitter(.05), data=cs) + geom_smooth(method="lm")
 
-qplot(control_none_scalar, implicature_scalar, col=agegroup, 
+qplot(control_none_scalar, implicature_scalar, col=Age, 
 	ylab="Proportion of 'some' trials correct",
 	xlab="Proportion of 'none' trials correct",
 		position=position_jitter(.02), data=cs) + 
 	geom_smooth(method="lm", col="black", lty=1) + 
 		theme_bw()+
-	geom_smooth(aes(col= agegroup, group= agegroup), 
+	geom_smooth(aes(col= Age, group= Age), 
 				se=FALSE, method="lm",lty=3) 
 				
 
